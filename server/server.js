@@ -1,11 +1,13 @@
 require("dotenv").config();
 const express = require("express");
+const uploadRoutes = require("./src/routes/uploadRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Parse incoming JSON bodies
 app.use(express.json());
+app.use("/api/upload", uploadRoutes);
 
 // Health check — confirms server is alive
 app.get("/health", (req, res) => {
