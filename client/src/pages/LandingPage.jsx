@@ -1,12 +1,78 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Upload, Play, Check, 
-  Video, AudioLines, FileImage
+  Video, AudioLines, FileImage, ScanLine, Sparkles, Crosshair, Activity
 } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import Lottie from 'lottie-react';
 import logo from '../assets/Logo tab.png';
+
+const scanningLottie = {"v":"5.5.2","fr":60,"ip":0,"op":60,"w":100,"h":100,"nm":"SCAN","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"Line","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[100]},{"t":60,"s":[0]}]},"r":{"a":0,"k":0,"ix":6},"p":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"t":0,"s":[50,0,0],"to":[0,20,0],"ti":[0,0,0]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"t":30,"s":[50,100,0],"to":[0,0,0],"ti":[0,20,0]},{"t":60,"s":[50,0,0]}],"ix":2,"l":2},"a":{"a":0,"k":[0,0,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":0,"k":[100,2],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":60,"st":0,"bm":0}]};
+
+const VantaDotsBackground = () => {
+  const vantaRef = useRef(null);
+  const vantaEffect = useRef(null);
+
+  useEffect(() => {
+    import('three').then((THREE) => {
+      // Vanta's minified build requires THREE on the global window object
+      window.THREE = THREE;
+      import('vanta/dist/vanta.dots.min').then((VANTA) => {
+        if (!vantaEffect.current && vantaRef.current) {
+          vantaEffect.current = VANTA.default({
+            el: vantaRef.current,
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x38bdf8,
+            color2: 0x818cf8,
+            backgroundColor: 0x050B14,
+            size: 3.00,
+            spacing: 35.00,
+            showLines: true,
+          });
+        }
+      });
+    });
+    return () => {
+      if (vantaEffect.current) {
+        vantaEffect.current.destroy();
+        vantaEffect.current = null;
+      }
+    };
+  }, []);
+
+  return <div ref={vantaRef} className="absolute inset-0" style={{ zIndex: 0 }} />;
+};
+
+const FUIOverlay = () => {
+  const [data, setData] = useState({ lat: 34.05, lng: -118.24, bitrate: 4.5 });
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData({
+        lat: 34.05 + (Math.random() * 0.01 - 0.005),
+        lng: -118.24 + (Math.random() * 0.01 - 0.005),
+        bitrate: 4.0 + Math.random() * 1.5
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  
+};
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { scrollY } = useScroll();
+  const [isHovering, setIsHovering] = useState(false);
+
+
 
   const features = [
     "Full Detection History Dashboard",
@@ -23,27 +89,27 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative">
       {/* Navigation Bar */}
-      <nav className="flex items-center justify-between px-6 lg:px-12 h-20 bg-white border-b border-slate-100 sticky top-0 z-50">
+      <nav className="absolute top-0 w-full flex items-center justify-between px-6 lg:px-12 h-24 bg-transparent z-50">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <img src={logo} alt="Logo" className="w-16 h-16" />
-          <span className="text-2xl font-black tracking-tight text-blue-700">TrueLens AI</span>
+          <img src={logo} alt="Logo" className="w-16 h-16 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
+          <span className="text-2xl font-black tracking-tight text-white drop-shadow-md">TrueLens AI</span>
         </div>
         
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-          <span className="hover:text-blue-600 cursor-pointer transition-colors">Home</span>
-          <span className="hover:text-blue-600 cursor-pointer transition-colors">About</span>
-          <span className="hover:text-blue-600 cursor-pointer transition-colors">Pricing</span>
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-300">
+          <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">Home</span>
+          <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">About</span>
+          <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">Pricing</span>
         </div>
         
         <div className="flex items-center gap-6">
-          <button className="hidden sm:flex text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-5 py-2.5 rounded-full transition-colors items-center gap-2">
-            <span className="mr-1 text-base leading-none">👤</span> Sign In
+          <button className="hidden sm:flex text-sm font-bold text-slate-300 hover:text-white transition-colors items-center gap-2">
+            Sign In
           </button>
           <button 
             onClick={() => navigate('/detect')}
-            className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-6 py-2.5 rounded-full shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
+            className="text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2 border border-blue-400/30"
           >
             <Play className="w-4 h-4 fill-current" /> View Demo
           </button>
@@ -51,89 +117,73 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto w-full px-6 lg:px-12 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+      <section className="relative w-full min-h-screen overflow-hidden flex items-center bg-[#050B14] cursor-crosshair">
         
-        {/* Left Column */}
-        <div className="flex flex-col items-start text-left">
-          {/* Badges */}
-          <div className="flex items-center gap-4 mb-8 flex-wrap">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-100">
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              DEEPFAKE DETECTION
-            </div>
-            <div className="w-[42px] h-[42px] rounded-full border border-slate-200 flex flex-col items-center justify-center text-[8px] font-black text-slate-500 text-center leading-tight"><span>ISO</span><span className="text-slate-400">27001</span></div>
-            <div className="w-[42px] h-[42px] rounded-full bg-[#5BA4DF] flex flex-col items-center justify-center text-[8px] font-black text-white text-center leading-tight"><span>AICPA</span><span>SOC</span></div>
-            <div className="w-[42px] h-[42px] rounded-full bg-[#20377B] flex items-center justify-center text-[10px] font-black text-yellow-400">GDPR</div>
-          </div>
+        <FUIOverlay />
 
-          <h1 className="text-5xl lg:text-[4rem] font-extrabold tracking-tight text-[#1F2937] leading-[1.05] mb-6">
-            Deepfake Detector for Images, Audio & Videos
-          </h1>
+        {/* Vanta DOTS Background */}
+        <VantaDotsBackground />
+        {/* Subtle Radial Gradient Overlay for depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#050B14]/60 to-[#050B14] z-[1] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full relative z-20 flex flex-col items-center justify-center pt-32 lg:pt-40 text-center">
           
-          <p className="text-lg text-slate-500 mb-10 max-w-xl leading-relaxed">
-            Detect AI-generated deepfakes, manipulated videos, and synthetic media with advanced computer vision technology. Protect your organization from sophisticated video fraud, misinformation campaigns, and identity impersonation across all digital platforms.
-          </p>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col items-center max-w-4xl"
+          >
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 mb-12 w-full sm:w-auto">
-            <button
-              onClick={() => navigate('/detect')}
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#1754CE] hover:bg-blue-700 text-white rounded-full font-bold text-base transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] mb-6 drop-shadow-2xl"
             >
-              Start Free Analysis &rarr;
-            </button>
-            <button className="w-full sm:w-auto px-8 py-3.5 bg-[#4B5563] hover:bg-slate-700 text-white rounded-full font-bold text-base transition-all shadow-lg shadow-slate-500/30">
-              Schedule Demo
-            </button>
-          </div>
+              Detect <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500">Deepfakes</span><br/>With Absolute Precision
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed"
+            >
+              Protect your organization from synthetic media and AI-generated fraud using continuous 3D spatial analysis and advanced neural networking.
+            </motion.p>
 
-          <div className="flex flex-col gap-4">
-            {features.map((feature, idx) => (
-              <div key={idx} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
-                  <Check className="w-3.5 h-3.5 text-white stroke-[4]" />
-                </div>
-                <span className="text-slate-600 font-semibold text-[15px]">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Column - Analysis Card */}
-        <div className="relative w-full max-w-lg mx-auto lg:ml-auto mt-8 lg:mt-0">
-          <div className="rounded-[2.5rem] border-[2px] border-dashed border-[#A5C6FB] p-8 lg:p-10 bg-white relative">
-            <div className="text-center mb-8 relative z-10">
-              <h2 className="text-[22px] font-bold text-[#1D4ED8] mb-4">Basic Deepfake Detection Analysis</h2>
-              <p className="text-slate-600 text-[15px] mb-4 leading-relaxed">
-                Unlock <strong>faster speeds and even better accuracy</strong> with our custom enterprise models.
-              </p>
-              
-              <a href="#" className="text-[#2563EB] underline font-medium hover:text-blue-800 transition-colors text-sm">
-                Book your demo today.
-              </a>
-
-              <p className="text-sm text-slate-500 mt-6 mb-6">
-                For bulk image analysis, please upload a <strong>ZIP file</strong> of your images.
-              </p>
-              
-              <button 
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto"
+            >
+              <button
                 onClick={() => navigate('/detect')}
-                className="mx-auto flex items-center justify-center gap-2 px-8 py-3 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-full transition-all shadow-md w-11/12 sm:w-auto"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                className="relative overflow-hidden w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] hover:-translate-y-1 flex items-center justify-center gap-3 group border border-cyan-400/50 z-30"
               >
-                <Upload className="w-[18px] h-[18px]" /> Upload File
+                Start Detecting
+                {isHovering ? (
+                  <div className="w-6 h-6 flex items-center justify-center opacity-90 mix-blend-screen scale-150">
+                    <Lottie animationData={scanningLottie} loop={true} autoplay={true} />
+                  </div>
+                ) : (
+                  <ScanLine className="w-6 h-6 transition-transform group-hover:scale-110" />
+                )}
               </button>
-            </div>
+              
+            </motion.div>
+          </motion.div>
+          
 
-            {/* Images Grid */}
-            <div className="grid grid-cols-3 gap-3 relative z-10">
-              <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 1" className="w-full h-[90px] object-cover rounded-xl shadow-sm hover:scale-105 transition-transform" />
-              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 2" className="w-full h-[90px] object-cover rounded-xl shadow-sm hover:scale-105 transition-transform" />
-              <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 3" className="w-full h-[90px] object-cover rounded-xl shadow-sm hover:scale-105 transition-transform" />
-              <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 4" className="w-full h-[90px] object-cover rounded-xl shadow-sm hover:scale-105 transition-transform" />
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 5" className="w-full h-[90px] object-cover rounded-xl shadow-sm hover:scale-105 transition-transform" />
-              <img src="https://images.unsplash.com/photo-1558222218-b7b54eede3f3?auto=format&fit=crop&q=80&w=400&h=300" alt="Analysis 6" className="w-full h-[90px] object-cover rounded-xl bg-slate-100 shadow-sm hover:scale-105 transition-transform" />
-            </div>
-          </div>
+
         </div>
+
+
       </section>
 
       {/* Trusted By Banner */}
