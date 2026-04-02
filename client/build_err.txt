@@ -1,0 +1,200 @@
+﻿
+> client@0.0.0 build
+> vite build
+
+npm : [33mYou are using 
+Node.js 20.17.0. Vite 
+requires Node.js version 
+20.19+ or 22.12+. Please 
+upgrade your Node.js 
+version.[39m
+At line:1 char:1
++ npm run build 2>&1 | 
+Out-File -Encoding utf8 
+build_err.txt
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (  
+  [33mYou are us...s ve   
+ rsion.[39m:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+file:///C:/Users/Student/D
+esktop/DEEPFAKE%20DETECTIO
+N/client/node_modules/roll
+down/dist/shared/binding-C
+kWPGrSM.mjs:507
+		if (loadErrors.length > 
+0) throw new 
+Error("Cannot find native 
+binding. npm has a bug 
+related to optional 
+dependencies (https://gith
+ub.com/npm/cli/issues/4828
+). Please try `npm i` 
+again after removing both 
+package-lock.json and 
+node_modules directory.", 
+{ cause: 
+loadErrors.reduce((err, 
+cur) => {
+		                        
+         ^
+
+Error: Cannot find native 
+binding. npm has a bug 
+related to optional 
+dependencies (https://gith
+ub.com/npm/cli/issues/4828
+). Please try `npm i` 
+again after removing both 
+package-lock.json and 
+node_modules directory.
+    at file:///C:/Users/St
+udent/Desktop/DEEPFAKE%20D
+ETECTION/client/node_modul
+es/rolldown/dist/shared/bi
+nding-CkWPGrSM.mjs:507:36
+    at file:///C:/Users/St
+udent/Desktop/DEEPFAKE%20D
+ETECTION/client/node_modul
+es/rolldown/dist/shared/bi
+nding-CkWPGrSM.mjs:9:48
+    ... 2 lines matching 
+cause stack trace ...
+    at async 
+ModuleLoader.import (node:
+internal/modules/esm/loade
+r:473:24)
+    at async 
+CAC.<anonymous> (file:///C
+:/Users/Student/Desktop/DE
+EPFAKE%20DETECTION/client/
+node_modules/vite/dist/nod
+e/cli.js:764:28) {
+  [cause]: Error: Cannot 
+find module '@rolldown/bin
+ding-win32-x64-msvc'
+  Require stack:
+  - C:\Users\Student\Deskt
+op\DEEPFAKE DETECTION\clie
+nt\node_modules\rolldown\d
+ist\shared\binding-CkWPGrS
+M.mjs
+      at 
+Module._resolveFilename (n
+ode:internal/modules/cjs/l
+oader:1225:15)
+      ... 2 lines 
+matching cause stack 
+trace ...
+      at require (node:int
+ernal/modules/helpers:179:
+18)
+      at requireNative (fi
+le:///C:/Users/Student/Des
+ktop/DEEPFAKE%20DETECTION/
+client/node_modules/rolldo
+wn/dist/shared/binding-CkW
+PGrSM.mjs:147:21)
+      at file:///C:/Users/
+Student/Desktop/DEEPFAKE%2
+0DETECTION/client/node_mod
+ules/rolldown/dist/shared/
+binding-CkWPGrSM.mjs:475:1
+8
+      at file:///C:/Users/
+Student/Desktop/DEEPFAKE%2
+0DETECTION/client/node_mod
+ules/rolldown/dist/shared/
+binding-CkWPGrSM.mjs:9:48
+      at file:///C:/Users/
+Student/Desktop/DEEPFAKE%2
+0DETECTION/client/node_mod
+ules/rolldown/dist/shared/
+parse-BGipdujE.mjs:39:46
+      at ModuleJob.run (no
+de:internal/modules/esm/mo
+dule_job:234:25)
+      at async 
+ModuleLoader.import (node:
+internal/modules/esm/loade
+r:473:24) {
+    code: 
+'MODULE_NOT_FOUND',
+    requireStack: [
+      'C:\\Users\\Student\
+\Desktop\\DEEPFAKE DETECTI
+ON\\client\\node_modules\\
+rolldown\\dist\\shared\\bi
+nding-CkWPGrSM.mjs'
+    ],
+    cause: Error: Cannot 
+find module './rolldown-bi
+nding.win32-x64-msvc.node'
+    Require stack:
+    - C:\Users\Student\Des
+ktop\DEEPFAKE DETECTION\cl
+ient\node_modules\rolldown
+\dist\shared\binding-CkWPG
+rSM.mjs
+        at 
+Module._resolveFilename (n
+ode:internal/modules/cjs/l
+oader:1225:15)
+        at Module._load (n
+ode:internal/modules/cjs/l
+oader:1051:27)
+        at Module.require 
+(node:internal/modules/cjs
+/loader:1311:19)
+        at require (node:i
+nternal/modules/helpers:17
+9:18)
+        at requireNative (
+file:///C:/Users/Student/D
+esktop/DEEPFAKE%20DETECTIO
+N/client/node_modules/roll
+down/dist/shared/binding-C
+kWPGrSM.mjs:142:12)
+        at file:///C:/User
+s/Student/Desktop/DEEPFAKE
+%20DETECTION/client/node_m
+odules/rolldown/dist/share
+d/binding-CkWPGrSM.mjs:475
+:18
+        at file:///C:/User
+s/Student/Desktop/DEEPFAKE
+%20DETECTION/client/node_m
+odules/rolldown/dist/share
+d/binding-CkWPGrSM.mjs:9:4
+8
+        at file:///C:/User
+s/Student/Desktop/DEEPFAKE
+%20DETECTION/client/node_m
+odules/rolldown/dist/share
+d/parse-BGipdujE.mjs:39:46
+        at ModuleJob.run (
+node:internal/modules/esm/
+module_job:234:25)
+        at async 
+ModuleLoader.import (node:
+internal/modules/esm/loade
+r:473:24) {
+      code: 
+'MODULE_NOT_FOUND',
+      requireStack: [
+        'C:\\Users\\Studen
+t\\Desktop\\DEEPFAKE DETEC
+TION\\client\\node_modules
+\\rolldown\\dist\\shared\\
+binding-CkWPGrSM.mjs'
+      ]
+    }
+  }
+}
+
+Node.js v20.17.0
