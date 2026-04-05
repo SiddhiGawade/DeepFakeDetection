@@ -1,10 +1,24 @@
+/**
+ * LandingPage.jsx
+ *
+ * Public-facing product landing experience for TrueLens AI.
+ * Holds marketing sections, hero interactions, and primary CTA into detection flow.
+ *
+ * Owner: Team Lead (Ayush)
+ * Version: 1.0.0
+ *
+ * Team review checklist:
+ * - keep visual effects optional and non-blocking on slower devices
+ * - maintain clear CTA path to /detect
+ * - avoid mixing upload/business validation logic into this page
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Upload, Play, Check, 
-  Video, AudioLines, FileImage, ScanLine, Sparkles, Crosshair, Activity
+  Video, AudioLines, FileImage, ScanLine, Sparkles, Crosshair
 } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import logo from '../assets/Logo tab.png';
 
@@ -16,7 +30,6 @@ const VantaDotsBackground = () => {
 
   useEffect(() => {
     import('three').then((THREE) => {
-      // Vanta's minified build requires THREE on the global window object
       window.THREE = THREE;
       import('vanta/dist/vanta.dots.min').then((VANTA) => {
         if (!vantaEffect.current && vantaRef.current) {
@@ -64,23 +77,20 @@ const FUIOverlay = () => {
     return () => clearInterval(interval);
   }, []);
 
-  
+  return (
+    <div className="absolute top-28 left-6 lg:top-36 lg:left-12 text-[10px] text-cyan-500 font-mono tracking-widest opacity-60 hidden sm:flex flex-col gap-1 pointer-events-none z-10">
+      <div className="flex items-center gap-2 mb-1 text-slate-400"><Crosshair className="w-3 h-3 text-cyan-400" /> SYS.COORD.TRACK</div>
+      <div>[LAT: {data.lat.toFixed(4)}]</div>
+      <div>[LNG: {data.lng.toFixed(4)}]</div>
+      <div>[BITRATE: {data.bitrate.toFixed(1)} MB/s]</div>
+      <div className="mt-2 text-emerald-400 animate-pulse">[SECURE CONNECTION]</div>
+    </div>
+  );
 };
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { scrollY } = useScroll();
   const [isHovering, setIsHovering] = useState(false);
-
-
-
-  const features = [
-    "Full Detection History Dashboard",
-    "On-site & regional deployments",
-    "Advanced Video Analysis",
-    "Real-time Deepfake Detection",
-    "Media Authenticity Verification"
-  ];
 
   const trustedBy = [
     "Media Companies",
@@ -109,7 +119,7 @@ export default function LandingPage() {
           </button>
           <button 
             onClick={() => navigate('/detect')}
-            className="text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2 border border-blue-400/30"
+            className="text-sm font-bold text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2 border border-blue-400/30"
           >
             <Play className="w-4 h-4 fill-current" /> View Demo
           </button>
@@ -124,11 +134,11 @@ export default function LandingPage() {
         {/* Vanta DOTS Background */}
         <VantaDotsBackground />
         {/* Subtle Radial Gradient Overlay for depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#050B14]/60 to-[#050B14] z-[1] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-transparent via-[#050B14]/60 to-[#050B14] z-1 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full relative z-20 flex flex-col items-center justify-center pt-32 lg:pt-40 text-center">
           
-          <motion.div 
+          <Motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -136,25 +146,25 @@ export default function LandingPage() {
           >
 
 
-            <motion.h1 
+            <Motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] mb-6 drop-shadow-2xl"
             >
-              Detect <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500">Deepfakes</span><br/>With Absolute Precision
-            </motion.h1>
+              Detect <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-500">Deepfakes</span><br/>With Absolute Precision
+            </Motion.h1>
             
-            <motion.p 
+            <Motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed"
             >
               Protect your organization from synthetic media and AI-generated fraud using continuous 3D spatial analysis and advanced neural networking.
-            </motion.p>
+            </Motion.p>
 
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
@@ -164,7 +174,7 @@ export default function LandingPage() {
                 onClick={() => navigate('/detect')}
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
-                className="relative overflow-hidden w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] hover:-translate-y-1 flex items-center justify-center gap-3 group border border-cyan-400/50 z-30"
+                className="relative overflow-hidden w-full sm:w-auto px-10 py-4 bg-linear-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] hover:-translate-y-1 flex items-center justify-center gap-3 group border border-cyan-400/50 z-30"
               >
                 Start Detecting
                 {isHovering ? (
@@ -176,8 +186,8 @@ export default function LandingPage() {
                 )}
               </button>
               
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
           
 
 
@@ -191,7 +201,7 @@ export default function LandingPage() {
         <span className="text-slate-400">Trusted By</span>
         {trustedBy.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
-            <Check className="w-5 h-5 text-[#10B981] stroke-[3]" />
+            <Check className="w-5 h-5 text-[#10B981] stroke-3" />
             <span className="text-slate-600">{item}</span>
           </div>
         ))}
@@ -254,7 +264,7 @@ export default function LandingPage() {
               </div>
               <div className="order-first lg:order-last relative">
                 <img src="https://images.unsplash.com/photo-1616874535071-af635c05d762?auto=format&fit=crop&q=80&w=800&h=600" alt="Video analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-linear-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
               </div>
             </div>
 
@@ -262,7 +272,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="relative">
                 <img src="https://images.unsplash.com/photo-1590602847861-f357a914ea8a?auto=format&fit=crop&q=80&w=800&h=600" alt="Audio analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
               </div>
               <div>
                 <div className="w-12 h-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mb-6">
@@ -298,7 +308,7 @@ export default function LandingPage() {
               </div>
               <div className="order-first lg:order-last relative">
                 <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800&h=600" alt="Image analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
               </div>
             </div>
           </div>

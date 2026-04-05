@@ -1,9 +1,26 @@
-import { useState } from 'react';
+/**
+ * ImageDetectionPage.jsx
+ *
+ * Image upload experience for the Deepfake Detection dashboard.
+ * Thin page wrapper that consumes shared upload services and backend-driven constraints.
+ *
+ * Owner: Team Lead (Ayush)
+ * Version: 1.0.0
+ *
+ * Team review checklist:
+ * - keep UI logic thin; business validation remains backend-authoritative
+ * - keep MEDIA_TYPE aligned with route intent (image)
+ * - if upload result schema changes, adjust success rendering here
+ */
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Image as ImageIcon, Upload, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import logo from '../assets/Logo tab.png';
+import { fetchUploadConstraints, getConstraintUiHints, uploadMediaFile } from '../services/uploadApi';
+import { getUploadErrorMessage } from '../constants/uploadErrorMap';
 
 export default function ImageDetectionPage() {
+  const MEDIA_TYPE = 'image';
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [previewSize, setPreviewSize] = useState(null);
@@ -11,16 +28,27 @@ export default function ImageDetectionPage() {
   const [status, setStatus] = useState('idle'); // idle, uploading, success, error
   const [result, setResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [constraints, setConstraints] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchUploadConstraints(MEDIA_TYPE)
+      .then((data) => {
+        if (active) setConstraints(data);
+      })
+      .catch(() => {
+        if (active) setConstraints(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
-      const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      if (!allowed.includes(selected.type)) {
-        setErrorMessage('Unsupported file type. Please upload a JPEG, PNG, or WEBP.');
-        setStatus('error');
-        return;
-      }
       setFile(selected);
       setPreviewSize((selected.size / (1024 * 1024)).toFixed(2));
       setPreviewUrl(URL.createObjectURL(selected));
@@ -33,30 +61,26 @@ export default function ImageDetectionPage() {
   const handleUpload = async () => {
     if (!file) return;
     setStatus('uploading');
-    
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
+      const response = await uploadMediaFile({
+        file,
+        mediaType: MEDIA_TYPE,
+        metadata: {
+          source_label: file.name,
+        },
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setStatus('success');
-        setResult(data.data); // originalName, savedAs, etc.
-      } else {
-        throw new Error(data.message || 'Upload failed');
-      }
+      setStatus('success');
+      setResult(response.data); // originalName, savedAs, etc.
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setErrorMessage(err.message || 'An error occurred while uploading. Ensure backend is running.');
+      setErrorMessage(getUploadErrorMessage(err.code, err.detail || err.message || 'Upload failed.'));
     }
   };
+
+  const { mediaHintLabel, maxSizeLabel } = getConstraintUiHints(constraints);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
@@ -84,21 +108,21 @@ export default function ImageDetectionPage() {
           <p className="text-slate-500">Upload an image to scan for latent blending errors and GAN manipulations.</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-8 border-[2px] border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="bg-white rounded-3xl p-8 border-2 border-slate-100 shadow-xl shadow-slate-200/50">
           
           {/* Upload Area */}
           {!previewUrl && (
             <div className="border-2 border-dashed border-indigo-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center bg-indigo-50/30">
               <Upload className="w-10 h-10 text-indigo-400 mb-4" />
               <h3 className="text-lg font-bold text-slate-700 mb-1">Select an Image</h3>
-              <p className="text-sm text-slate-500 mb-6">JPEG, PNG, or WEBP up to 200MB</p>
+              <p className="text-sm text-slate-500 mb-6">{mediaHintLabel} up to {maxSizeLabel}</p>
               
               <label className="cursor-pointer bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-colors">
                 Browse Files
                 <input 
                   type="file" 
                   className="hidden" 
-                  accept="image/jpeg, image/jpg, image/png, image/webp"
+                  accept={`${MEDIA_TYPE}/*`}
                   onChange={handleFileChange}
                 />
               </label>
