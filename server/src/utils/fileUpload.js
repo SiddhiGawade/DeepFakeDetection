@@ -1,5 +1,24 @@
+/**
+ * fileUpload.js
+ *
+ * Multer storage and broad MIME boundary checks.
+ * Per-media strict enforcement happens later in uploadController with media_type context.
+ *
+ * Owner: Team Lead (Ayush)
+ * Version: 1.0.0
+ *
+ * Team review checklist:
+ * - keep this layer permissive enough for all supported media families
+ * - keep strict business rules in controller, not here
+ * - verify max upload cap stays aligned with contract constraints
+ */
 const multer = require("multer");
-const path = require("path");
+const { MediaType, getConstraints, maxBytes } = require("../contracts/analyseContract");
+
+const MAX_UPLOAD_BYTES = Math.max(...Object.values(MediaType).map((mediaType) => maxBytes(mediaType) || 0));
+const ALLOWED_MIME_UNION = [...new Set(
+    Object.values(MediaType).flatMap((mediaType) => getConstraints(mediaType)?.allowedMimes || [])
+)];
 
 // diskStorage tells multer WHERE and HOW to save files
 const storage = multer.diskStorage({
@@ -16,19 +35,9 @@ const storage = multer.diskStorage({
 
 // fileFilter decides which file types are allowed
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-        "video/mp4",
-        "video/webm",
-        "audio/mpeg",
-        "audio/wav",
-        "audio/mp4",
-    ];
+    const mimeType = String(file.mimetype || "").toLowerCase();
 
-    if (allowedTypes.includes(file.mimetype)) {
+    if (ALLOWED_MIME_UNION.includes(mimeType)) {
         cb(null, true); // accept file
     } else {
         cb(new Error("Unsupported file type"), false); // reject file
@@ -38,7 +47,8 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 200 * 1024 * 1024 }, // 200MB max
+    // The strict per-media limit is enforced in the controller using media_type.
+    limits: { fileSize: MAX_UPLOAD_BYTES },
 });
 
 module.exports = upload;
