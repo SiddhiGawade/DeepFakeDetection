@@ -1,5 +1,6 @@
 const { generateFileHash } = require("../utils/hashGenerator");
 const { getCachedResult, setCachedResult } = require("../services/cacheService");
+const { getPrediction } = require("../services/modelService");
 
 const uploadFile = async (req, res) => {
     if (!req.file) {
@@ -9,9 +10,9 @@ const uploadFile = async (req, res) => {
         });
     }
 
-    // Generate hash from the saved file
     const fileHash = generateFileHash(req.file.path);
 
+    // Check cache first
     const cached = await getCachedResult(fileHash);
     if (cached) {
         return res.status(200).json({
@@ -22,38 +23,28 @@ const uploadFile = async (req, res) => {
         });
     }
 
-    // No cache hit — placeholder for AI model call (Phase 3)
+    // Call the correct AI model based on file type
+    const prediction = await getPrediction(req.file.mimetype);
+
     const result = {
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
         hash: fileHash,
-        prediction: null,   // AI model will fill this in Phase 3
-        confidence: null,
+        prediction: prediction.prediction,
+        confidence: prediction.confidence,
+        type: prediction.type,
     };
 
-    // Store in cache for next time
+    // Cache the result
     await setCachedResult(fileHash, result);
 
     return res.status(200).json({
         success: true,
-        message: "File processed and cached",
+        message: "File analysed successfully",
         fromCache: false,
         data: result,
     });
-
-    // return res.status(200).json({
-    //     success: true,
-    //     message: "File uploaded successfully",
-    //     data: {
-    //         originalName: req.file.originalname,
-    //         savedAs: req.file.filename,
-    //         size: req.file.size,
-    //         mimeType: req.file.mimetype,
-    //         path: req.file.path,
-    //         hash: fileHash,
-    //     },
-    // });
 };
 
 module.exports = { uploadFile };
