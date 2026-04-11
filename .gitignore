@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Datasets and Manifests
+data/raw/
+data/processed/
+data/manifests/
+
+# IDEs
+.vscode/
+.idea/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+.AppleDouble
+.LSOverride
+
+Thumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
