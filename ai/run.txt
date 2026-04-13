@@ -1,0 +1,8 @@
+# terminal 1
+uvicorn dummy_image_model:app --app-dir ai --port 8001 --reload
+
+# terminal 2
+uvicorn dummy_video_model:app --app-dir ai --port 8002 --reload
+
+# terminal 3
+uvicorn dummy_audio_model:app --app-dir ai --port 8003 --reload

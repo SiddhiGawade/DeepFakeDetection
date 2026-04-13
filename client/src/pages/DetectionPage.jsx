@@ -1,3 +1,17 @@
+/**
+ * DetectionPage.jsx
+ *
+ * Media-type selection dashboard.
+ * Routes users into image, audio, or video upload flows.
+ *
+ * Owner: Team Lead (Ayush)
+ * Version: 1.0.0
+ *
+ * Team review checklist:
+ * - keep route targets in sync with router config
+ * - update card copy when supported formats change
+ * - treat this page as navigation only (no upload logic)
+ */
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileImage, AudioLines, Video } from 'lucide-react';
 import logo from '../assets/Logo tab.png';
@@ -34,7 +48,7 @@ export default function DetectionPage() {
           {/* Option 1: Image */}
           <div 
             onClick={() => navigate('/image-detection')}
-            className="group cursor-pointer bg-white border-[2px] border-slate-100 rounded-3xl p-8 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
+            className="group cursor-pointer bg-white border-2 border-slate-100 rounded-3xl p-8 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
           >
             <div className="w-20 h-20 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <FileImage className="w-10 h-10" />
@@ -51,7 +65,7 @@ export default function DetectionPage() {
           {/* Option 2: Audio */}
           <div 
             onClick={() => navigate('/audio-detection')}
-            className="group cursor-pointer bg-white border-[2px] border-slate-100 rounded-3xl p-8 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
+            className="group cursor-pointer bg-white border-2 border-slate-100 rounded-3xl p-8 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
           >
             <div className="w-20 h-20 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <AudioLines className="w-10 h-10" />
@@ -68,7 +82,7 @@ export default function DetectionPage() {
           {/* Option 3: Video */}
           <div 
             onClick={() => navigate('/video-detection')}
-            className="group cursor-pointer bg-white border-[2px] border-slate-100 rounded-3xl p-8 hover:border-pink-400 hover:shadow-2xl hover:shadow-pink-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
+            className="group cursor-pointer bg-white border-2 border-slate-100 rounded-3xl p-8 hover:border-pink-400 hover:shadow-2xl hover:shadow-pink-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center"
           >
             <div className="w-20 h-20 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <Video className="w-10 h-10" />
