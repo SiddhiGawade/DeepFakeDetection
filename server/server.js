@@ -5,6 +5,9 @@ const uploadRoutes = require("./src/routes/uploadRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const connectDB = require("./src/config/db");
+connectDB();
+
 // Parse incoming JSON bodies
 app.use(express.json());
 app.use("/api/upload", uploadRoutes);
