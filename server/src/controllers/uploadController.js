@@ -5,6 +5,7 @@ const { getCachedResult, setCachedResult } = require("../services/cacheService")
 const { getPrediction } = require("../services/modelService");
 const AnalysisResult = require("../models/analysisResult");
 const { probeVideo } = require("../utils/videoMetadata");
+const { uploadToCloud } = require("../services/storageService");
 const {
     SCHEMA_VERSION,
     MediaType,
@@ -170,6 +171,9 @@ const uploadFile = async (req, res) => {
         return res.status(200).json({ success: true, message: "Result served from cache", fromCache: true, data: cachedPayload });
     }
 
+    // Upload to Cloudinary AFTER hashing (this deletes the local file)
+    const fileUrl = await uploadToCloud(req.file.path, mediaType);
+
     // Call the correct AI model based on file type
     const prediction = await getPrediction(req.file.mimetype);
 
@@ -181,6 +185,7 @@ const uploadFile = async (req, res) => {
         mimeType: req.file.mimetype,
         size: req.file.size,
         hash: fileHash,
+        file_url: fileUrl,
         metadata: metadata.value,
         prediction: prediction.prediction,
         confidence: prediction.confidence,
@@ -201,6 +206,7 @@ const uploadFile = async (req, res) => {
         {
             file_hash: fileHash,
             file_type: mediaType,
+            file_url: fileUrl,
             original_name: req.file.originalname,
             mime_type: req.file.mimetype,
             file_size: req.file.size,
