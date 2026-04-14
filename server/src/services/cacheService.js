@@ -9,8 +9,12 @@ const CACHE_TTL = 86400;
  * Returns parsed object if found, null if not
  */
 const getCachedResult = async (fileHash) => {
-    const cached = await redis.get(fileHash);
-    return cached ? JSON.parse(cached) : null;
+    try {
+        const cached = await redis.get(fileHash);
+        return cached ? JSON.parse(cached) : null;
+    } catch {
+        return null;
+    }
 };
 
 /**
@@ -18,7 +22,11 @@ const getCachedResult = async (fileHash) => {
  * Automatically expires after CACHE_TTL seconds
  */
 const setCachedResult = async (fileHash, result) => {
-    await redis.set(fileHash, JSON.stringify(result), "EX", CACHE_TTL);
+    try {
+        await redis.set(fileHash, JSON.stringify(result), "EX", CACHE_TTL);
+    } catch {
+        // Ignore cache write errors if Redis is down
+    }
 };
 
 module.exports = { getCachedResult, setCachedResult };

@@ -13,6 +13,8 @@
  * - verify max upload cap stays aligned with contract constraints
  */
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const { MediaType, getConstraints, maxBytes } = require("../contracts/analyseContract");
 
 const MAX_UPLOAD_BYTES = Math.max(...Object.values(MediaType).map((mediaType) => maxBytes(mediaType) || 0));
@@ -20,10 +22,15 @@ const ALLOWED_MIME_UNION = [...new Set(
     Object.values(MediaType).flatMap((mediaType) => getConstraints(mediaType)?.allowedMimes || [])
 )];
 
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // diskStorage tells multer WHERE and HOW to save files
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "uploads/"); // save to uploads/ folder
+        cb(null, uploadDir); // save to absolute uploads/ folder
     },
     filename: function (req, file, cb) {
         // give file a unique name: timestamp + original name

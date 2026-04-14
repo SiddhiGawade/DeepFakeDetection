@@ -14,14 +14,15 @@ const getModelUrl = (mimeType) => {
     return null;
 };
 
-const getPrediction = async (mimeType) => {
+const getPrediction = async (mimeType, fileUrl) => {
     const modelUrl = getModelUrl(mimeType);
 
     if (!modelUrl) {
         throw new Error(`No model available for type: ${mimeType}`);
     }
 
-    const response = await axios.post(modelUrl);
+    const payload = fileUrl ? { file_url: fileUrl } : {};
+    const response = await axios.post(modelUrl, payload);
     return response.data; // { prediction, confidence, type }
 };
 
