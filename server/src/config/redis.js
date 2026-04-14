@@ -10,7 +10,8 @@ redis.on("connect", () => {
 });
 
 redis.on("error", (err) => {
-    console.error("Redis error:", err.message);
+    // Commented out to prevent spam on local testing without Redis
+    // console.error("Redis error:", err.message);
 });
 
 module.exports = redis;

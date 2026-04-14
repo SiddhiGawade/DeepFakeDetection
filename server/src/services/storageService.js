@@ -10,6 +10,15 @@ const fs = require("fs");
  * @returns {string} - Cloudinary secure URL
  */
 const uploadToCloud = async (filePath, mediaType) => {
+    // If Cloudinary isn't configured in .env, gracefully fallback to local file URLs
+    // This allows local AI testing without crashing the Node backend!
+    if (!process.env.CLOUDINARY_API_KEY) {
+        console.warn("Cloudinary API Key not found! Bypassing upload and returning local file:// URL.");
+        const absolutePath = require("path").resolve(filePath);
+        // Important: keep the local file on disk so the AI service can read it
+        return "file:///" + absolutePath.replace(/\\/g, '/');
+    }
+
     // Cloudinary resource type mapping
     const resourceType = mediaType === "audio" ? "video" : mediaType;
     // Note: Cloudinary uses "video" resource type for audio files too

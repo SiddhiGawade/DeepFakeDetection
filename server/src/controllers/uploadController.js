@@ -175,7 +175,7 @@ const uploadFile = async (req, res) => {
     const fileUrl = await uploadToCloud(req.file.path, mediaType);
 
     // Call the correct AI model based on file type
-    const prediction = await getPrediction(req.file.mimetype);
+    const prediction = await getPrediction(req.file.mimetype, fileUrl);
 
     const result = {
         ...task,
@@ -190,6 +190,11 @@ const uploadFile = async (req, res) => {
         prediction: prediction.prediction,
         confidence: prediction.confidence,
         type: prediction.type,
+        verdict: prediction.verdict,
+        is_fake: prediction.is_fake,
+        probabilities: prediction.probabilities,
+        reasons: prediction.reasons,
+        analysis: prediction.analysis,
         rppg_result: null,
         geometry_result: null,
         heatmap_url: null,
