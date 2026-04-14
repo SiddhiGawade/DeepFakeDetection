@@ -21,6 +21,9 @@ import {
 import { motion as Motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import logo from '../assets/Logo tab.png';
+import videoImg from '../assets/VIDEO-IMG.png';
+import imageImg from '../assets/IMAGE-IMG.png';
+import audioImg from '../assets/AUDIO-IMG.png';
 
 const scanningLottie = {"v":"5.5.2","fr":60,"ip":0,"op":60,"w":100,"h":100,"nm":"SCAN","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"Line","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[100]},{"t":60,"s":[0]}]},"r":{"a":0,"k":0,"ix":6},"p":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"t":0,"s":[50,0,0],"to":[0,20,0],"ti":[0,0,0]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"t":30,"s":[50,100,0],"to":[0,0,0],"ti":[0,20,0]},{"t":60,"s":[50,0,0]}],"ix":2,"l":2},"a":{"a":0,"k":[0,0,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":0,"k":[100,2],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":60,"st":0,"bm":0}]};
 
@@ -77,15 +80,7 @@ const FUIOverlay = () => {
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className="absolute top-28 left-6 lg:top-36 lg:left-12 text-[10px] text-cyan-500 font-mono tracking-widest opacity-60 hidden sm:flex flex-col gap-1 pointer-events-none z-10">
-      <div className="flex items-center gap-2 mb-1 text-slate-400"><Crosshair className="w-3 h-3 text-cyan-400" /> SYS.COORD.TRACK</div>
-      <div>[LAT: {data.lat.toFixed(4)}]</div>
-      <div>[LNG: {data.lng.toFixed(4)}]</div>
-      <div>[BITRATE: {data.bitrate.toFixed(1)} MB/s]</div>
-      <div className="mt-2 text-emerald-400 animate-pulse">[SECURE CONNECTION]</div>
-    </div>
-  );
+  
 };
 
 export default function LandingPage() {
@@ -109,14 +104,12 @@ export default function LandingPage() {
         
         <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-300">
           <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">Home</span>
-          <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">About</span>
+          <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">About Team</span>
           <span className="hover:text-cyan-400 cursor-pointer transition-colors shadow-sm">Pricing</span>
         </div>
         
         <div className="flex items-center gap-6">
-          <button className="hidden sm:flex text-sm font-bold text-slate-300 hover:text-white transition-colors items-center gap-2">
-            Sign In
-          </button>
+          
           <button 
             onClick={() => navigate('/detect')}
             className="text-sm font-bold text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2 border border-blue-400/30"
@@ -197,12 +190,12 @@ export default function LandingPage() {
       </section>
 
       {/* Trusted By Banner */}
-      <section className="py-8 bg-slate-50 border-y border-slate-100 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-[14px] font-bold text-slate-500">
-        <span className="text-slate-400">Trusted By</span>
+      <section className="py-8 bg-indigo-50/60 border-y border-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-[14px] font-bold">
+        <span className="text-indigo-400/80 uppercase tracking-wider text-xs">Trusted By</span>
         {trustedBy.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <Check className="w-5 h-5 text-[#10B981] stroke-3" />
-            <span className="text-slate-600">{item}</span>
+            <span className="text-indigo-900/80">{item}</span>
           </div>
         ))}
       </section>
@@ -238,146 +231,257 @@ export default function LandingPage() {
       </section>
 
       {/* Detailed Features Overview */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1F2937] mb-4">Comprehensive Forensic Analysis</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">We cover every vector of synthetic media generation.</p>
-          </div>
+      <section className="py-32 bg-[#0A101D] border-y border-slate-800 relative overflow-hidden">
+        {/* Decorative background glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.05),transparent_70%)] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full relative z-10">
+          <Motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-24"
+          >
+            <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight">Comprehensive Forensic Analysis</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl">We cover every vector of synthetic media generation using multi-modal AI detection engines.</p>
+          </Motion.div>
 
-          <div className="flex flex-col gap-24">
+          <div className="flex flex-col gap-32">
             {/* Feature 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="w-12 h-12 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center mb-6">
-                  <Video className="w-6 h-6" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <Motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.15)]">
+                    <Video className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-3xl lg:text-4xl font-bold text-white">Video Forensics</h3>
                 </div>
-                <h3 className="text-3xl font-bold text-[#1F2937] mb-4">Video Forensics</h3>
-                <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                <p className="text-slate-400 text-lg leading-relaxed mb-8">
                   Analyzes frame-by-frame temporal consistency, facial tracking glitches, and deepfake masks. Our advanced algorithms detect minute changes in pulse rate, lighting inconsistencies, and blending boundaries that are invisible to the naked eye.
                 </p>
-                <ul className="space-y-3 font-medium text-slate-700">
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Frame-by-frame Temporal Analysis</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Face Swap Detection</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Lip-sync Inconsistency Tracking</li>
+                <ul className="space-y-4 font-medium text-slate-300">
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-pink-500/20"><Check className="w-4 h-4 text-pink-400" /></div> Frame-by-frame Temporal Analysis</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-pink-500/20"><Check className="w-4 h-4 text-pink-400" /></div> Face Swap Detection</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-pink-500/20"><Check className="w-4 h-4 text-pink-400" /></div> Lip-sync Inconsistency Tracking</li>
                 </ul>
-              </div>
-              <div className="order-first lg:order-last relative">
-                <img src="https://images.unsplash.com/photo-1616874535071-af635c05d762?auto=format&fit=crop&q=80&w=800&h=600" alt="Video analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-linear-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
-              </div>
+              </Motion.div>
+              <Motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+                className="order-first lg:order-last relative group"
+              >
+                <div className="absolute -inset-4 bg-linear-to-tr from-pink-500/30 to-purple-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <img src={videoImg} alt="Video analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
+                <div className="absolute inset-0 bg-linear-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+              </Motion.div>
             </div>
 
             {/* Feature 2 (Reversed) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div className="relative">
-                <img src="https://images.unsplash.com/photo-1590602847861-f357a914ea8a?auto=format&fit=crop&q=80&w=800&h=600" alt="Audio analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
-              </div>
-              <div>
-                <div className="w-12 h-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mb-6">
-                  <AudioLines className="w-6 h-6" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <Motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+                className="relative group "
+              >
+                <div className="absolute -inset-4 bg-linear-to-tr from-amber-500/30 to-orange-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <img src={audioImg} alt="Audio analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
+                <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+              </Motion.div>
+              <Motion.div 
+                initial={{ opacity: 0, x: 40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+                    <AudioLines className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-3xl lg:text-4xl font-bold text-white">Voice Authentication</h3>
                 </div>
-                <h3 className="text-3xl font-bold text-[#1F2937] mb-4">Voice Authentication</h3>
-                <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                <p className="text-slate-400 text-lg leading-relaxed mb-8">
                   Extracts spectral frequencies to differentiate between human vocal cords and AI synthesis. Protect against sophisticated voice cloning used in social engineering and banking fraud.
                 </p>
-                <ul className="space-y-3 font-medium text-slate-700">
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Spectral Frequency Analysis</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Silence & Breath Detection</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Multi-language Support</li>
+                <ul className="space-y-4 font-medium text-slate-300">
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-amber-500/20"><Check className="w-4 h-4 text-amber-400" /></div> Spectral Frequency Analysis</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-amber-500/20"><Check className="w-4 h-4 text-amber-400" /></div> Silence & Breath Detection</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-amber-500/20"><Check className="w-4 h-4 text-amber-400" /></div> Multi-language Support</li>
                 </ul>
-              </div>
+              </Motion.div>
             </div>
 
             {/* Feature 3 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="w-12 h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6">
-                  <FileImage className="w-6 h-6" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <Motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.15)]">
+                    <FileImage className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-3xl lg:text-4xl font-bold text-white">Image Artifact Detection</h3>
                 </div>
-                <h3 className="text-3xl font-bold text-[#1F2937] mb-4">Image Artifact Detection</h3>
-                <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                <p className="text-slate-400 text-lg leading-relaxed mb-8">
                   Detects AI-generated images, GAN traces, and latent blending errors in static photos. Verify the authenticity of identity documents, news photographs, and insurance claims.
                 </p>
-                <ul className="space-y-3 font-medium text-slate-700">
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Pixel-level Anomaly Map</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Exif Metadata Forensics</li>
-                  <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500" /> Midjourney/DALL-E 3 Detection</li>
+                <ul className="space-y-4 font-medium text-slate-300">
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-indigo-500/20"><Check className="w-4 h-4 text-indigo-400" /></div> Pixel-level Anomaly Map</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-indigo-500/20"><Check className="w-4 h-4 text-indigo-400" /></div> Exif Metadata Forensics</li>
+                  <li className="flex items-center gap-4"><div className="p-1 rounded-full bg-indigo-500/20"><Check className="w-4 h-4 text-indigo-400" /></div> Midjourney/DALL-E 3 Detection</li>
                 </ul>
-              </div>
-              <div className="order-first lg:order-last relative">
-                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800&h=600" alt="Image analysis" className="rounded-3xl shadow-2xl" />
-                <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay"></div>
-              </div>
+              </Motion.div>
+              <Motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7 }}
+                className="order-first lg:order-last relative group"
+              >
+                <div className="absolute -inset-4 bg-linear-to-tr from-indigo-500/30 to-blue-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <img src={imageImg} alt="Image analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
+                <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+              </Motion.div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 px-6 lg:px-12 max-w-7xl mx-auto w-full text-center">
-        <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1F2937] mb-16">Trusted by Industry Leaders</h2>
+      <section className="pt-12 pb-24 px-6 lg:px-12 max-w-7xl mx-auto w-full text-center relative z-20">
+        <Motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1F2937] mb-6 tracking-tight">Trusted by Industry Leaders</h2>
+          <p className="text-slate-500 max-w-2xl mx-auto text-lg mb-20">See how top organizations are leveraging TrueLens AI to secure their digital ecosystems.</p>
+        </Motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center text-center">
-            <div className="text-yellow-400 flex gap-1 mb-6 text-lg">★★★★★</div>
-            <p className="text-slate-600 mb-8 grow">"TrueLens AI has completely transformed how we verify user-submitted media. It's incredibly fast, accurate, and integrates directly into our CMS pipeline."</p>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+          {/* Card 1 */}
+          <Motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="group relative bg-white border border-slate-200/60 rounded-3xl p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col items-center text-center hover:-translate-y-2 z-10 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="text-amber-400 flex gap-1 mb-8 text-xl group-hover:scale-110 transition-transform duration-300">★★★★★</div>
+            <p className="text-slate-600 mb-10 text-lg leading-relaxed relative z-10 grow">"TrueLens AI has completely transformed how we verify user-submitted media. It's incredibly fast, accurate, and integrates directly into our CMS pipeline."</p>
+            <div className="flex items-center gap-5 relative z-10 w-full justify-center pt-6 border-t border-slate-100">
+              <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden ring-4 ring-slate-50">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150" alt="Sarah J." className="w-full h-full object-cover" />
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-[#1F2937]">Sarah Jenkins</h4>
-                <p className="text-xs text-slate-500">Head of Trust & Safety, MediaCorp</p>
+                <h4 className="font-bold text-[#1F2937] text-lg">Sarah Jenkins</h4>
+                <p className="text-sm font-medium text-blue-600">Head of Trust & Safety</p>
+                <p className="text-xs text-slate-400">MediaCorp</p>
               </div>
             </div>
-          </div>
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center text-center transform md:-translate-y-4">
-            <div className="text-yellow-400 flex gap-1 mb-6 text-lg">★★★★★</div>
-            <p className="text-slate-600 mb-8 grow">"As a news agency, verifying footage authenticity is critical. TrueLens AI is the safety net that ensures we never broadcast synthetic or manipulated content."</p>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+          </Motion.div>
+
+          {/* Card 2 */}
+          <Motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="group relative bg-white border border-blue-100 rounded-3xl p-10 shadow-[0_8px_30px_rgba(59,130,246,0.08)] hover:shadow-[0_20px_40px_rgba(59,130,246,0.15)] transition-all duration-500 flex flex-col items-center text-center transform md:-translate-y-6 hover:-translate-y-8 z-20 overflow-hidden ring-1 ring-blue-50"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-cyan-400 to-blue-500"></div>
+            <div className="absolute inset-0 bg-linear-to-b from-blue-50/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="text-amber-400 flex gap-1 mb-8 text-xl group-hover:scale-110 transition-transform duration-300">★★★★★</div>
+            <p className="text-slate-700 font-medium mb-10 text-lg leading-relaxed relative z-10 grow">"As a news agency, verifying footage authenticity is critical. TrueLens AI is the safety net that ensures we never broadcast synthetic or manipulated content."</p>
+            <div className="flex items-center gap-5 relative z-10 w-full justify-center pt-6 border-t border-slate-100">
+              <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden ring-4 ring-blue-50">
                 <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150" alt="Michael C." className="w-full h-full object-cover" />
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-[#1F2937]">Michael Chen</h4>
-                <p className="text-xs text-slate-500">Chief Editor, Global News</p>
+                <h4 className="font-bold text-[#1F2937] text-lg">Michael Chen</h4>
+                <p className="text-sm font-medium text-blue-600">Chief Editor</p>
+                <p className="text-xs text-slate-400">Global News</p>
               </div>
             </div>
-          </div>
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center text-center">
-            <div className="text-yellow-400 flex gap-1 mb-6 text-lg">★★★★★</div>
-            <p className="text-slate-600 mb-8 grow">"The voice cloning detection is state-of-the-art. We deployed the TrueLens API to catch fraudulent verification attempts before they reach human reviewers."</p>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+          </Motion.div>
+
+          {/* Card 3 */}
+          <Motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="group relative bg-white border border-slate-200/60 rounded-3xl p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col items-center text-center hover:-translate-y-2 z-10 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="text-amber-400 flex gap-1 mb-8 text-xl group-hover:scale-110 transition-transform duration-300">★★★★★</div>
+            <p className="text-slate-600 mb-10 text-lg leading-relaxed relative z-10 grow">"The voice cloning detection is state-of-the-art. We deployed the TrueLens API to catch fraudulent verification attempts before they reach human reviewers."</p>
+            <div className="flex items-center gap-5 relative z-10 w-full justify-center pt-6 border-t border-slate-100">
+              <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden ring-4 ring-slate-50">
                 <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150" alt="Elena R." className="w-full h-full object-cover" />
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-[#1F2937]">Elena Rostova</h4>
-                <p className="text-xs text-slate-500">VP of Security, FinTech Global</p>
+                <h4 className="font-bold text-[#1F2937] text-lg">Elena Rostova</h4>
+                <p className="text-sm font-medium text-blue-600">VP of Security</p>
+                <p className="text-xs text-slate-400">FinTech Global</p>
               </div>
             </div>
-          </div>
+          </Motion.div>
         </div>
       </section>
 
       {/* CTA Box */}
-      <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto w-full mb-12">
-        <div className="bg-[#1754CE] rounded-[3rem] p-12 lg:p-20 text-center relative overflow-hidden shadow-2xl shadow-blue-600/30">
-          <div className="absolute top-[-50%] left-[-10%] w-[60%] h-[150%] bg-white/10 blur-[100px] rounded-full pointer-events-none" />
+      <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto w-full mb-12 relative z-20">
+        <Motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="bg-[#0B152A] rounded-[3rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-800"
+        >
+          {/* Abstract glow shapes */}
+          <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[150%] bg-blue-600/30 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[150%] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none" />
+
+          {/* Grid pattern overlay (optional, subtle radial fade) */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.1),transparent_70%)] pointer-events-none" />
+
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6">Ready to secure your digital content?</h2>
-            <p className="text-blue-100 text-lg mb-10 max-w-2xl mx-auto">Join hundreds of organizations currently using TrueLens AI to detect manipulation and combat misinformation in real-time.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => navigate('/detect')} className="w-full sm:w-auto px-8 py-4 bg-white text-blue-700 font-bold rounded-full hover:bg-slate-50 transition-colors shadow-lg">
-                Start Free Analysis
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
+              Ready to secure your digital content?
+            </h2>
+            <p className="text-slate-300 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+              Join hundreds of organizations currently using TrueLens AI to detect manipulation and combat misinformation in real-time.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+              <button 
+                onClick={() => navigate('/detect')} 
+                className="w-full sm:w-auto px-10 py-5 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] hover:-translate-y-1 flex items-center justify-center gap-2 border border-blue-400/30"
+              >
+                Start Free Analysis <Sparkles className="w-5 h-5 text-white/90" />
               </button>
-              <button className="w-full sm:w-auto px-8 py-4 border-2 border-white/30 text-white font-bold rounded-full hover:bg-white/10 transition-colors">
+              <button 
+                className="w-full sm:w-auto px-10 py-5 border border-slate-600 text-white font-bold rounded-full hover:bg-white/5 transition-all duration-300 hover:-translate-y-1"
+              >
                 Contact Sales
               </button>
             </div>
           </div>
-        </div>
+        </Motion.div>
       </section>
 
       {/* Footer */}
