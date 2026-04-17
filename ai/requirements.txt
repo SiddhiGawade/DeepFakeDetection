@@ -6,4 +6,5 @@ torchaudio
 librosa
 numpy
 soundfile
+Pillow
 python-multipart
