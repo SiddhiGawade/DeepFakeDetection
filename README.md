@@ -1,82 +1,145 @@
 # Multimodal Deepfake Detection System
 
-## Overview
-This repository contains the backend service for the Multimodal Deepfake Detection System. It is designed to handle user uploads of various media types—images, videos, and audio—and process them to determine if they contain deepfake manipulations. 
+A full-stack deepfake detection system that analyzes images, audio, and video using trained AI models. Built with React, Node.js/Express, FastAPI, MongoDB, Redis, and Cloudinary.
 
-*Note: The current version implements the foundational uploading mechanism and API structure. Future phases will introduce AI model integrations, caching, and database functionalities.*
+## Project Structure
 
-## Features
-- **Media Uploading API**: An Express-based API endpoint that accepts file uploads.
-- **File Validation**: Uses Multer to restrict uploads to acceptable MIME types and enforce a 200MB file size limit.
-- **Multimodal Support**: Supports a variety of formats:
-  - **Images**: JPEG, PNG, WEBP
-  - **Videos**: MP4, WEBM
-  - **Audio**: MPEG, WAV, MP4 (Audio)
-- **Health Check**: Endpoint to quickly check the server's status.
+```
+├── client/          # React frontend (Vite)
+├── server/          # Main backend (Express + Node.js)
+├── ai/              # AI model services (FastAPI + Python)
+│   ├── image_main.py
+│   ├── audio_main.py
+│   ├── image_model.py
+│   ├── audio_model.py
+│   └── utils/
+├── models/          # Trained model weights (.pth files)
+└── docs/
+```
 
-## Future / Planned Architecture
-The system is built with scalability in mind. The planned architecture (outlined in `docs/nayan.md`) will include:
-- **Cloud Storage**: AWS S3 integration for robust file storage.
-- **Caching**: Redis for quick data access and request caching.
-- **Database**: MongoDB for storing upload metadata, processing status, and detection results.
-- **AI Processing**: Integration with detection models to classify media as real or fake.
+## Prerequisites
 
-## Getting Started
+- Node.js v18+
+- Python 3.10+
+- Redis (running locally on port 6379)
+- MongoDB Atlas account (or local MongoDB)
 
-### Prerequisites
-- Node.js (v14 or higher recommended)
-- npm
+## Setup
 
-### Installation
-1. Navigate to the `server` directory:
-   ```bash
-   cd server
-   ```
-2. Install the required dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up the environment variables. Copy the example file and configure it:
-   ```bash
-   cp .env.example .env
-   ```
+### 1. Clone and install dependencies
 
-### Running the Server
-To start the server in development mode (using nodemon):
 ```bash
+# Install server dependencies
+cd server
+npm install
+
+# Install Python dependencies
+pip install -r ai/requirements.txt
+```
+
+### 2. Environment variables
+
+```bash
+cd server
+cp .env.example .env
+```
+
+Fill in your `.env`:
+```
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/deepfake_db
+REDIS_HOST=localhost
+REDIS_PORT=6379
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+IMAGE_MODEL_URL=http://localhost:8001
+VIDEO_MODEL_URL=http://localhost:8002
+AUDIO_MODEL_URL=http://localhost:8003
+```
+
+### 3. Install frontend dependencies
+
+```bash
+cd client
+npm install
+```
+
+## Running the Project
+
+You need **5 terminals** running simultaneously.
+
+### Terminal 1 — Redis
+```bash
+redis-server
+```
+
+### Terminal 2 — Express Backend
+```bash
+cd server
 npm run dev
 ```
 
-To start the server for production:
-```bash
-npm start
+Expected output:
 ```
-The server will start by default on `http://localhost:5000` (or `PORT` specified in `.env`).
+Server running on http://localhost:5000
+Redis connected
+MongoDB connected
+```
+
+### Terminal 3 — Image Model (port 8001)
+```bash
+uvicorn image_main:app --app-dir ai --port 8001 --reload
+```
+
+### Terminal 4 — Audio Model (port 8003)
+```bash
+uvicorn audio_main:app --app-dir ai --port 8003 --reload
+```
+
+### Terminal 5 — Frontend
+```bash
+cd client
+npm run dev
+```
+
+Frontend runs at `http://localhost:5173`
 
 ## API Endpoints
 
-### 1. File Upload
-- **Endpoint**: `POST /api/upload`
-- **Description**: Uploads a single media file.
-- **Body**: `multipart/form-data` with the key `file`.
-- **Response**: Returns a JSON object with a success message and basic file metadata (original name, saved name, size, MIME type, and temporary path).
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/upload` | Upload file for analysis |
+| GET | `/api/upload/constraints` | Get file upload limits |
+| GET | `/api/upload/status/:taskId` | Poll analysis status |
+| GET | `/health` | Server health check |
 
-### 2. Health Check
-- **Endpoint**: `GET /health`
-- **Description**: Confirms that the API is running correctly.
-- **Response**: `{"status": "ok", "message": "Deepfake Detection API is running"}`
+### Upload Request
+```
+POST /api/upload
+Content-Type: multipart/form-data
 
-## Project Structure
+file        → media file
+media_type  → "image" | "video" | "audio"
 ```
-.
-├── docs/                # Project documentation
-└── server/              # Backend service
-    ├── src/
-    │   ├── controllers/ # Request handlers (upload logic)
-    │   ├── routes/      # Express route definitions
-    │   └── utils/       # Utility functions (Multer config)
-    ├── uploads/         # Temporary local storage for incoming files
-    ├── .env.example     # Template for environment variables
-    ├── package.json     # Node.js dependencies and scripts
-    └── server.js        # Main entry point for the Express backend
-```
+
+## Supported Formats
+
+| Type | Formats | Max Size |
+|------|---------|----------|
+| Image | JPEG, PNG, WEBP, BMP, HEIC | 20 MB |
+| Video | MP4, WEBM, MOV, AVI, MKV | 200 MB |
+| Audio | WAV, MP3, M4A, OGG | 50 MB |
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React, Vite, TailwindCSS |
+| Backend | Node.js, Express |
+| AI Models | Python, FastAPI, PyTorch |
+| Image Model | EfficientNet-B4 (99.89% accuracy) |
+| Audio Model | ResNet18 on Mel Spectrograms |
+| Database | MongoDB Atlas |
+| Cache | Redis |
+| Storage | Cloudinary |
