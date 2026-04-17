@@ -2,28 +2,6 @@
 
 A full-stack deepfake detection system that analyzes images, audio, and video using trained AI models. Built with React, Node.js/Express, FastAPI, MongoDB, Redis, and Cloudinary.
 
-## Project Structure
-
-```
-├── client/          # React frontend (Vite)
-├── server/          # Main backend (Express + Node.js)
-├── ai/              # AI model services (FastAPI + Python)
-│   ├── image_main.py
-│   ├── audio_main.py
-│   ├── image_model.py
-│   ├── audio_model.py
-│   └── utils/
-├── models/          # Trained model weights (.pth files)
-└── docs/
-```
-
-## Prerequisites
-
-- Node.js v18+
-- Python 3.10+
-- Redis (running locally on port 6379)
-- MongoDB Atlas account (or local MongoDB)
-
 ## Setup
 
 ### 1. Clone and install dependencies
@@ -67,14 +45,9 @@ npm install
 
 ## Running the Project
 
-You need **5 terminals** running simultaneously.
+You need **4 terminals** running simultaneously.
 
-### Terminal 1 — Redis
-```bash
-redis-server
-```
-
-### Terminal 2 — Express Backend
+### Terminal 1 — Express Backend
 ```bash
 cd server
 npm run dev
@@ -87,23 +60,27 @@ Redis connected
 MongoDB connected
 ```
 
-### Terminal 3 — Image Model (port 8001)
+### Terminal 2 — Image Model (port 8001)
 ```bash
 uvicorn image_main:app --app-dir ai --port 8001 --reload
 ```
 
-### Terminal 4 — Audio Model (port 8003)
+### Terminal 3 — Audio Model (port 8003)
 ```bash
 uvicorn audio_main:app --app-dir ai --port 8003 --reload
 ```
 
-### Terminal 5 — Frontend
+### Terminal 4 — Frontend
 ```bash
 cd client
 npm run dev
 ```
 
 Frontend runs at `http://localhost:5173`
+
+> **Note:** Redis runs automatically as a Windows service after installation. No manual start needed.
+
+## Project Structure
 
 ## API Endpoints
 
