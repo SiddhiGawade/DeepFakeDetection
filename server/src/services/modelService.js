@@ -437,16 +437,67 @@ function buildSuccessVideoResult({ taskId, fusionStage, geometryResult, rppgResu
     };
 }
 
+function hasAnySignal(result, signalKeys) {
+    if (!result || typeof result !== "object") return false;
+    return signalKeys.some((key) => result[key] !== null && result[key] !== undefined);
+}
+
+function mapLegacyStageStatus(stageDetails, payloadError) {
+    if (stageDetails && typeof stageDetails === "object") {
+        const mapped = Object.entries(stageDetails).reduce((acc, [stageName, stagePayload]) => {
+            if (!stagePayload || typeof stagePayload !== "object") {
+                acc[stageName] = { success: false };
+                return acc;
+            }
+
+            acc[stageName] = {
+                success: Boolean(stagePayload.ok),
+                latency_ms: Number.isFinite(Number(stagePayload.latency_ms)) ? Number(stagePayload.latency_ms) : undefined,
+            };
+            return acc;
+        }, {});
+
+        if (Object.keys(mapped).length > 0) {
+            return mapped;
+        }
+    }
+
+    return { fallback: { success: !payloadError } };
+}
+
 function mapLegacyVideoFallbackResult(taskId, payload, processingMs) {
     const safePayload = payload && typeof payload === "object" ? payload : {};
-    const geometryResult = createGeometryResult(safePayload.geometry_result || {});
-    const rppgResult = createRPPGResult(safePayload.rppg_result || {});
+    const rawStageDetails = safePayload.stage_details && typeof safePayload.stage_details === "object"
+        ? safePayload.stage_details
+        : null;
+
+    const explicitGeometryResult = createGeometryResult(safePayload.geometry_result || {});
+    const explicitRppgResult = createRPPGResult(safePayload.rppg_result || {});
+
+    const facemeshStage = rawStageDetails?.facemesh;
+    const rppgStage = rawStageDetails?.rppg;
+
+    const stageGeometryResult = facemeshStage ? mapGeometryResult(facemeshStage) : createGeometryResult();
+    const stageRppgResult = rppgStage ? mapRppgResult(rppgStage) : createRPPGResult();
+
+    const geometryResult = hasAnySignal(explicitGeometryResult, ["ear_mean", "blink_rate_per_min", "landmark_jitter", "lip_nose_coupling", "anomaly_score"])
+        ? explicitGeometryResult
+        : stageGeometryResult;
+    const rppgResult = hasAnySignal(explicitRppgResult, ["bpm_estimate", "signal_quality", "spatial_coherence", "is_biological"])
+        ? explicitRppgResult
+        : stageRppgResult;
+
     const confidence = Number.isFinite(Number(safePayload.confidence)) ? Number(safePayload.confidence) : null;
 
     // Apply student-grade verdict logic
     const fallbackScore = Number.isFinite(Number(safePayload.prediction)) ? Number(safePayload.prediction) : 0.5;
     const fallbackConfidence = confidence === null ? 0.35 : confidence;
-    const fallbackIsBiological = Boolean(safePayload.rppg_result?.is_biological || false);
+    const fallbackIsBiological = Boolean(
+        rppgResult?.is_biological
+        || safePayload.rppg_result?.is_biological
+        || rawStageDetails?.rppg?.diagnostics?.is_biological
+        || false
+    );
     const studentVerdict = !safePayload.error ? getStudentVerdict(fallbackScore, fallbackConfidence, fallbackIsBiological) : null;
 
     const analysisContract = createAnalysisResult({
@@ -475,7 +526,7 @@ function mapLegacyVideoFallbackResult(taskId, payload, processingMs) {
         status: analysisContract.status,
         error_code: analysisContract.error_code,
         error_detail: analysisContract.error_detail,
-        stage_details: buildStageDetails({ fallback: { ok: !safePayload.error } }),
+        stage_details: buildStageDetails(mapLegacyStageStatus(rawStageDetails, safePayload.error)),
     };
 }
 

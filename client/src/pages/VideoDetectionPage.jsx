@@ -19,6 +19,63 @@ import logo from '../assets/Logo tab.png';
 import { fetchUploadConstraints, getConstraintUiHints, uploadMediaFile } from '../services/uploadApi';
 import { getUploadErrorMessage } from '../constants/uploadErrorMap';
 
+const VIDEO_VERDICT_PATTERN = Object.freeze({
+  fakeThreshold: 0.52,
+  realThreshold: 0.48,
+  minConfidence: 0.35,
+  tieBreakerConfidence: 0.5,
+});
+
+const FRIENDLY_VERDICT_LABELS = Object.freeze({
+  fake: 'AI Generated',
+  real: 'Authentic',
+  inconclusive: 'Inconclusive',
+});
+
+const LOADING_STEPS = [
+  'Uploading video file...',
+  'Extracting temporal and geometry features...',
+  'Running staged FaceMesh and rPPG inference...',
+  'Finalizing fusion verdict...',
+];
+
+function normalizeUnitInterval(rawValue) {
+  if (rawValue === null || rawValue === undefined) return null;
+  const numeric = Number(rawValue);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric > 1) return Math.min(Math.max(numeric / 100, 0), 1);
+  return Math.min(Math.max(numeric, 0), 1);
+}
+
+function resolveVideoVerdict(payload) {
+  const rawVerdict = typeof payload?.verdict === 'string' ? payload.verdict.toLowerCase() : null;
+  if (rawVerdict && FRIENDLY_VERDICT_LABELS[rawVerdict]) {
+    return rawVerdict;
+  }
+
+  const score = normalizeUnitInterval(payload?.prediction);
+  const confidence = normalizeUnitInterval(payload?.confidence);
+
+  if (score === null || confidence === null || confidence < VIDEO_VERDICT_PATTERN.minConfidence) {
+    return 'inconclusive';
+  }
+
+  if (score >= VIDEO_VERDICT_PATTERN.fakeThreshold) {
+    return 'fake';
+  }
+
+  if (score <= VIDEO_VERDICT_PATTERN.realThreshold) {
+    return 'real';
+  }
+
+  const isBiological = Boolean(payload?.rppg_result?.is_biological ?? payload?.analysis?.is_biological);
+  if (confidence >= VIDEO_VERDICT_PATTERN.tieBreakerConfidence) {
+    return isBiological ? 'real' : 'fake';
+  }
+
+  return 'inconclusive';
+}
+
 export default function VideoDetectionPage() {
   const MEDIA_TYPE = 'video';
   const navigate = useNavigate();
@@ -31,21 +88,12 @@ export default function VideoDetectionPage() {
   const [constraints, setConstraints] = useState(null);
   const [progressStep, setProgressStep] = useState(0);
 
-  const loadingSteps = [
-    'Uploading video file...',
-    'Extracting temporal and geometry features...',
-    'Running staged FaceMesh and rPPG inference...',
-    'Finalizing fusion verdict...',
-  ];
-
   useEffect(() => {
     let interval;
     if (status === 'uploading') {
       interval = setInterval(() => {
-        setProgressStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
+        setProgressStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
       }, 2000);
-    } else {
-      setProgressStep(0);
     }
     return () => clearInterval(interval);
   }, [status]);
@@ -75,11 +123,13 @@ export default function VideoDetectionPage() {
       setStatus('idle');
       setErrorMessage('');
       setResult(null);
+      setProgressStep(0);
     }
   };
 
   const handleUpload = async () => {
     if (!file) return;
+    setProgressStep(0);
     setStatus('uploading');
 
     try {
@@ -93,10 +143,12 @@ export default function VideoDetectionPage() {
 
       setStatus('success');
       setResult(response.data);
+      setProgressStep(0);
     } catch (err) {
       console.error(err);
       setStatus('error');
       setErrorMessage(getUploadErrorMessage(err.code, err.detail || err.message || 'Upload failed.'));
+      setProgressStep(0);
     }
   };
 
@@ -122,6 +174,27 @@ export default function VideoDetectionPage() {
     if (!Number.isFinite(numeric)) return String(result.prediction);
     return numeric.toFixed(4);
   })();
+
+  const verdictKey = isPipelineFailed ? 'inconclusive' : resolveVideoVerdict(result);
+  const verdictLabel = isPipelineFailed ? 'Analysis Failed' : FRIENDLY_VERDICT_LABELS[verdictKey] || 'Inconclusive';
+  const verdictTone = isPipelineFailed
+    ? 'danger'
+    : verdictKey === 'fake'
+      ? 'danger'
+      : verdictKey === 'real'
+        ? 'safe'
+        : 'warning';
+
+  const resultToneClasses = (() => {
+    if (verdictTone === 'danger') return 'text-red-700 bg-red-50 border-red-200';
+    if (verdictTone === 'safe') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    return 'text-amber-800 bg-amber-50 border-amber-200';
+  })();
+
+  const verdictNarrativeSentences = Array.isArray(result?.verdict_narrative?.sentences)
+    ? result.verdict_narrative.sentences.filter((line) => typeof line === 'string' && line.trim().length > 0).slice(0, 3)
+    : [];
+  const verdictNarrativeSource = result?.verdict_narrative?.source || 'template';
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
@@ -180,7 +253,7 @@ export default function VideoDetectionPage() {
                     <span className="text-xs text-slate-500 mt-1">{previewSize} MB</span>
                   </div>
                   <button
-                    onClick={() => { setFile(null); setPreviewUrl(null); setStatus('idle'); }}
+                    onClick={() => { setFile(null); setPreviewUrl(null); setStatus('idle'); setProgressStep(0); }}
                     className="text-xs font-bold text-red-600 hover:text-red-800 bg-red-50 px-4 py-2 rounded-xl shrink-0 transition-colors"
                     disabled={status === 'uploading'}
                   >
@@ -198,15 +271,15 @@ export default function VideoDetectionPage() {
                 )}
 
                 {status === 'success' && result && (
-                  <div className={`w-full border p-8 rounded-3xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 ${isPipelineFailed ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'}`}>
+                  <div className={`w-full border p-8 rounded-3xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 ${resultToneClasses}`}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                       <div className="col-span-1 flex flex-col items-center justify-center text-center bg-white/50 p-6 rounded-2xl border border-black/5 shadow-inner">
-                        {isPipelineFailed ? (
-                          <AlertCircle className="w-16 h-16 text-red-500 mb-2 drop-shadow-md" />
-                        ) : (
+                        {verdictTone === 'safe' ? (
                           <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-2 drop-shadow-md" />
+                        ) : (
+                          <AlertCircle className="w-16 h-16 text-red-500 mb-2 drop-shadow-md" />
                         )}
-                        <h2 className="font-extrabold text-3xl">{result.verdict ? result.verdict.toUpperCase() : 'NOT AVAILABLE'}</h2>
+                        <h2 className="font-extrabold text-3xl">{verdictLabel}</h2>
                         <p className="font-bold opacity-80 mt-1">Confidence: {confidenceLabel}</p>
                       </div>
 
@@ -221,8 +294,8 @@ export default function VideoDetectionPage() {
                             <span className="font-bold text-slate-800 text-sm mt-1">{result.status || 'completed'}</span>
                           </div>
                           <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Fusion Score</span>
-                            <span className="font-bold text-slate-800 text-sm mt-1">{scoreLabel}</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">User Verdict</span>
+                            <span className="font-bold text-slate-800 text-sm mt-1">{verdictLabel}</span>
                           </div>
                           <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col">
                             <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Saved Hash</span>
@@ -237,6 +310,18 @@ export default function VideoDetectionPage() {
                     </div>
 
                     <h4 className="font-bold opacity-80 mb-4 text-sm uppercase tracking-wider ml-1">Video Analytical Checks</h4>
+                    {verdictNarrativeSentences.length > 0 && (
+                      <div className="mb-6 p-5 rounded-2xl border shadow-sm bg-white/80 border-slate-200">
+                        <h4 className="font-bold text-slate-800">Plain-Language Verdict Summary</h4>
+                        <div className="mt-3 space-y-2 text-sm text-slate-700">
+                          {verdictNarrativeSentences.map((sentence, idx) => (
+                            <p key={idx}>- {sentence}</p>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-3 uppercase tracking-wider">Narrative Source: {verdictNarrativeSource}</p>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                       <div className="p-5 rounded-2xl border shadow-sm bg-white/70 border-slate-200">
                         <h4 className="font-bold text-slate-800">Fusion Diagnostics</h4>
@@ -262,6 +347,7 @@ export default function VideoDetectionPage() {
                     <div className="bg-white rounded-lg p-4 font-mono text-xs overflow-auto shadow-sm border border-slate-200">
                       <p><b>Original Name:</b> {result.originalName}</p>
                       <p><b>Pipeline Stages:</b> {stageSummary}</p>
+                      <p><b>Internal Fusion Score:</b> {scoreLabel}</p>
                       {result.error_code && <p><b>Error Code:</b> {result.error_code}</p>}
                       {result.error_detail && <p><b>Error Detail:</b> {result.error_detail}</p>}
                     </div>
@@ -279,11 +365,11 @@ export default function VideoDetectionPage() {
                         <VideoIcon className="w-10 h-10 text-pink-500 animate-pulse duration-1000" />
                       </div>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-700 animate-pulse transition-all duration-500 text-center">{loadingSteps[progressStep]}</h3>
+                    <h3 className="text-lg font-bold text-slate-700 animate-pulse transition-all duration-500 text-center">{LOADING_STEPS[progressStep]}</h3>
                     <div className="w-full bg-slate-100 h-2 mt-6 rounded-full overflow-hidden">
                       <div
                         className="bg-pink-500 h-full rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${((progressStep + 1) / loadingSteps.length) * 100}%` }}
+                        style={{ width: `${((progressStep + 1) / LOADING_STEPS.length) * 100}%` }}
                       />
                     </div>
                   </div>

@@ -178,4 +178,60 @@ describe("modelService non-video behavior", () => {
         expect(axios.post).toHaveBeenCalledWith("http://audio-model/predict/audio", { file_url: "https://files/audio.mp3" });
         expect(result).toEqual({ prediction: 0.44, confidence: 77.3, type: "audio", verdict: "AI Generated" });
     });
+
+    test("maps geometry and rPPG metrics from legacy fallback stage details", async () => {
+        process.env.VIDEO_MODEL_URL = "http://video-model";
+        process.env.VIDEO_PIPELINE_V2 = "false";
+        process.env.VIDEO_INCLUDE_STAGE_DETAILS = "true";
+
+        axios.post.mockResolvedValueOnce({
+            data: {
+                prediction: 0.41,
+                confidence: 0.79,
+                type: "video",
+                verdict: "real",
+                analysis: {
+                    verdict_reason: "Signals are biologically consistent",
+                },
+                stage_details: {
+                    facemesh: {
+                        ok: true,
+                        confidence: 0.74,
+                        diagnostics: {
+                            ear_mean: 0.24,
+                            blink_rate_per_min: 16,
+                            landmark_jitter: 0.11,
+                            lip_nose_coupling: 0.64,
+                            anomaly_score: 0.28,
+                        },
+                    },
+                    rppg: {
+                        ok: true,
+                        confidence: 0.69,
+                        diagnostics: {
+                            bpm_estimate: 76,
+                            signal_quality: 0.8,
+                            spatial_coherence: 0.77,
+                            is_biological: true,
+                        },
+                    },
+                    fusion: {
+                        ok: true,
+                        confidence: 0.79,
+                    },
+                },
+            },
+        });
+
+        const result = await getPrediction("video/mp4", "https://files/video.mp4", { taskId: "task-legacy-details" });
+
+        expect(result.geometry_result.ear_mean).toBe(0.24);
+        expect(result.geometry_result.blink_rate_per_min).toBe(16);
+        expect(result.rppg_result.bpm_estimate).toBe(76);
+        expect(result.rppg_result.signal_quality).toBe(0.8);
+        expect(result.rppg_result.is_biological).toBe(true);
+        expect(result.stage_details.facemesh.success).toBe(true);
+        expect(result.stage_details.rppg.success).toBe(true);
+        expect(result.stage_details.fusion.success).toBe(true);
+    });
 });

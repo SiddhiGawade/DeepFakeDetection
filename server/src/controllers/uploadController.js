@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const { generateFileHash } = require("../utils/hashGenerator");
 const { getCachedResult, setCachedResult } = require("../services/cacheService");
 const { getPrediction } = require("../services/modelService");
+const { buildVideoVerdictNarrative } = require("../services/verdictNarrationService");
 const AnalysisResult = require("../models/analysisResult");
 const { probeVideo } = require("../utils/videoMetadata");
 const { uploadToCloud } = require("../services/storageService");
@@ -65,6 +66,32 @@ function normalizeCachedResult(cached, mediaType, task) {
         error_code: cached.error_code || null,
         error_detail: cached.error_detail || null,
     };
+}
+
+function hasAnyNonNullMetric(metrics, keys) {
+    if (!metrics || typeof metrics !== "object") return false;
+    return keys.some((key) => metrics[key] !== null && metrics[key] !== undefined);
+}
+
+function shouldRefreshVideoCachePayload(payload) {
+    if (!payload || typeof payload !== "object") return false;
+
+    const hasGeometry = hasAnyNonNullMetric(payload.geometry_result, [
+        "ear_mean",
+        "blink_rate_per_min",
+        "landmark_jitter",
+        "lip_nose_coupling",
+        "anomaly_score",
+    ]);
+
+    const hasRppg = hasAnyNonNullMetric(payload.rppg_result, [
+        "bpm_estimate",
+        "signal_quality",
+        "spatial_coherence",
+        "is_biological",
+    ]);
+
+    return !hasGeometry || !hasRppg;
 }
 
 async function validateVideoRules(filePath, mediaType) {
@@ -167,8 +194,24 @@ const uploadFile = async (req, res) => {
 
     const cached = await getCachedResult(fileHash);
     if (cached) {
-        const cachedPayload = normalizeCachedResult(cached, mediaType, task);
-        return res.status(200).json({ success: true, message: "Result served from cache", fromCache: true, data: cachedPayload });
+        let cachedPayload = normalizeCachedResult(cached, mediaType, task);
+
+        const shouldRefreshVideoCache = mediaType === MediaType.VIDEO && shouldRefreshVideoCachePayload(cachedPayload);
+        if (shouldRefreshVideoCache) {
+            cachedPayload = null;
+        }
+
+        if (cachedPayload) {
+            if (mediaType === MediaType.VIDEO && !cachedPayload.verdict_narrative) {
+                cachedPayload = {
+                    ...cachedPayload,
+                    verdict_narrative: await buildVideoVerdictNarrative(cachedPayload),
+                };
+                await setCachedResult(fileHash, cachedPayload);
+            }
+
+            return res.status(200).json({ success: true, message: "Result served from cache", fromCache: true, data: cachedPayload });
+        }
     }
 
     // Upload to Cloudinary AFTER hashing (this deletes the local file)
@@ -209,6 +252,10 @@ const uploadFile = async (req, res) => {
         error_detail: normalizedVideoPrediction?.error_detail || null,
     };
 
+    if (isVideoMedia) {
+        result.verdict_narrative = await buildVideoVerdictNarrative(result);
+    }
+
     await setCachedResult(fileHash, result);
 
     // Save to MongoDB (skip if hash already exists)
@@ -227,6 +274,7 @@ const uploadFile = async (req, res) => {
                 analysis: result.analysis,
                 rppg_result: result.rppg_result,
                 geometry_result: result.geometry_result,
+                verdict_narrative: result.verdict_narrative || null,
             },
             error_code: result.error_code,
             error_detail: result.error_detail,

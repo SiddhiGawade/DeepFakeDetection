@@ -5,6 +5,13 @@ import logo from '../assets/Logo tab.png';
 import { fetchUploadConstraints, getConstraintUiHints, uploadMediaFile } from '../services/uploadApi';
 import { getUploadErrorMessage } from '../constants/uploadErrorMap';
 
+const IMAGE_LOADING_STEPS = [
+  'Uploading image file...',
+  'Extracting visual features...',
+  'Running EfficientNet-B4 analysis...',
+  'Finalizing deepfake verdict...',
+];
+
 export default function ImageDetectionPage() {
   const MEDIA_TYPE = 'image';
   const navigate = useNavigate();
@@ -17,21 +24,12 @@ export default function ImageDetectionPage() {
   const [constraints, setConstraints] = useState(null);
   const [progressStep, setProgressStep] = useState(0);
 
-  const loadingSteps = [
-    "Uploading image file...",
-    "Extracting visual features...",
-    "Running EfficientNet-B4 analysis...",
-    "Finalizing deepfake verdict..."
-  ];
-
   useEffect(() => {
     let interval;
     if (status === 'uploading') {
       interval = setInterval(() => {
-        setProgressStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
+        setProgressStep((prev) => (prev < IMAGE_LOADING_STEPS.length - 1 ? prev + 1 : prev));
       }, 2000);
-    } else {
-      setProgressStep(0);
     }
     return () => clearInterval(interval);
   }, [status]);
@@ -53,11 +51,13 @@ export default function ImageDetectionPage() {
       setStatus('idle');
       setErrorMessage('');
       setResult(null);
+      setProgressStep(0);
     }
   };
 
   const handleUpload = async () => {
     if (!file) return;
+    setProgressStep(0);
     setStatus('uploading');
     try {
       const response = await uploadMediaFile({
@@ -67,9 +67,11 @@ export default function ImageDetectionPage() {
       });
       setStatus('success');
       setResult(response.data);
+      setProgressStep(0);
     } catch (err) {
       setStatus('error');
       setErrorMessage(getUploadErrorMessage(err.code, err.detail || err.message || 'Upload failed.'));
+      setProgressStep(0);
     }
   };
 
@@ -87,7 +89,7 @@ export default function ImageDetectionPage() {
         </button>
       </nav>
 
-      <main className="flex-1 max-w-[90rem] mx-auto w-full px-4 lg:px-8 py-10 flex flex-col">
+      <main className="flex-1 max-w-360 mx-auto w-full px-4 lg:px-8 py-10 flex flex-col">
         <div className="mb-8 text-center">
           <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <ImageIcon className="w-8 h-8" />
@@ -133,7 +135,7 @@ export default function ImageDetectionPage() {
                     <span className="text-xs text-slate-500 mt-1">{previewSize} MB</span>
                   </div>
                   <button
-                    onClick={() => { setFile(null); setPreviewUrl(null); setStatus('idle'); }}
+                    onClick={() => { setFile(null); setPreviewUrl(null); setStatus('idle'); setProgressStep(0); }}
                     className="text-xs font-bold text-red-600 hover:text-red-800 bg-red-50 px-4 py-2 rounded-xl shrink-0 transition-colors"
                     disabled={status === 'uploading'}
                   >
@@ -236,9 +238,9 @@ export default function ImageDetectionPage() {
                         <ImageIcon className="w-10 h-10 text-indigo-500 animate-pulse" />
                       </div>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-700 animate-pulse text-center">{loadingSteps[progressStep]}</h3>
+                    <h3 className="text-lg font-bold text-slate-700 animate-pulse text-center">{IMAGE_LOADING_STEPS[progressStep]}</h3>
                     <div className="w-full bg-slate-100 h-2 mt-6 rounded-full overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${((progressStep + 1) / loadingSteps.length) * 100}%` }} />
+                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${((progressStep + 1) / IMAGE_LOADING_STEPS.length) * 100}%` }} />
                     </div>
                   </div>
                 ) : status !== 'success' && (
