@@ -175,10 +175,15 @@ const uploadFile = async (req, res) => {
     const fileUrl = await uploadToCloud(req.file.path, mediaType);
 
     // Call the correct AI model based on file type
-    const prediction = await getPrediction(req.file.mimetype, fileUrl);
+    const prediction = await getPrediction(req.file.mimetype, fileUrl, { taskId });
+    const isVideoMedia = mediaType === MediaType.VIDEO;
+    const normalizedVideoPrediction = isVideoMedia && prediction && typeof prediction === "object"
+        ? prediction
+        : null;
 
     const result = {
         ...task,
+        status: normalizedVideoPrediction?.status || task.status,
         schema_version: SCHEMA_VERSION,
         originalName: req.file.originalname,
         savedAs: req.file.filename,
@@ -187,20 +192,21 @@ const uploadFile = async (req, res) => {
         hash: fileHash,
         file_url: fileUrl,
         metadata: metadata.value,
-        prediction: prediction.prediction,
-        confidence: prediction.confidence,
-        type: prediction.type,
-        verdict: prediction.verdict,
+        prediction: normalizedVideoPrediction ? normalizedVideoPrediction.prediction : prediction.prediction,
+        confidence: normalizedVideoPrediction ? normalizedVideoPrediction.confidence : prediction.confidence,
+        type: normalizedVideoPrediction ? normalizedVideoPrediction.type : prediction.type,
+        verdict: normalizedVideoPrediction ? normalizedVideoPrediction.verdict : prediction.verdict,
         is_fake: prediction.is_fake,
         probabilities: prediction.probabilities,
         reasons: prediction.reasons,
-        analysis: prediction.analysis,
-        rppg_result: null,
-        geometry_result: null,
+        analysis: normalizedVideoPrediction ? normalizedVideoPrediction.analysis : prediction.analysis,
+        rppg_result: normalizedVideoPrediction ? normalizedVideoPrediction.rppg_result : null,
+        geometry_result: normalizedVideoPrediction ? normalizedVideoPrediction.geometry_result : null,
+        stage_details: normalizedVideoPrediction?.stage_details,
         heatmap_url: null,
         report_url: null,
-        error_code: null,
-        error_detail: null,
+        error_code: normalizedVideoPrediction?.error_code || null,
+        error_detail: normalizedVideoPrediction?.error_detail || null,
     };
 
     await setCachedResult(fileHash, result);
@@ -215,9 +221,15 @@ const uploadFile = async (req, res) => {
             original_name: req.file.originalname,
             mime_type: req.file.mimetype,
             file_size: req.file.size,
-            prediction: prediction.prediction,
-            confidence: prediction.confidence,
-            metrics: {},
+            prediction: result.prediction,
+            confidence: result.confidence,
+            metrics: {
+                analysis: result.analysis,
+                rppg_result: result.rppg_result,
+                geometry_result: result.geometry_result,
+            },
+            error_code: result.error_code,
+            error_detail: result.error_detail,
         },
         { upsert: true, new: true }
     );
