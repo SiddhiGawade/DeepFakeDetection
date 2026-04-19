@@ -12,14 +12,17 @@
  * - maintain clear CTA path to /detect
  * - avoid mixing upload/business validation logic into this page
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Upload, Play, Check, 
-  Video, AudioLines, FileImage, ScanLine, Sparkles, Crosshair
+  Video, AudioLines, FileImage, ScanLine, Sparkles
 } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import Lottie from 'lottie-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import logo from '../assets/Logo tab.png';
 import videoImg from '../assets/VIDEO-IMG.png';
 import imageImg from '../assets/IMAGE-IMG.png';
@@ -66,26 +69,124 @@ const VantaDotsBackground = () => {
   return <div ref={vantaRef} className="absolute inset-0" style={{ zIndex: 0 }} />;
 };
 
-const FUIOverlay = () => {
-  const [data, setData] = useState({ lat: 34.05, lng: -118.24, bitrate: 4.5 });
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setData({
-        lat: 34.05 + (Math.random() * 0.01 - 0.005),
-        lng: -118.24 + (Math.random() * 0.01 - 0.005),
-        bitrate: 4.0 + Math.random() * 1.5
-      });
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
-
-  
-};
-
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isHovering, setIsHovering] = useState(false);
+  const smootherRef = useRef(null);
+  const imageArtifactSectionRef = useRef(null);
+  const leftTestimonialRef = useRef(null);
+  const centerTestimonialRef = useRef(null);
+  const rightTestimonialRef = useRef(null);
+
+  useLayoutEffect(() => {
+    gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+    let animationContext;
+    const previousScrollRestoration = window.history.scrollRestoration;
+
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    ScrollTrigger.clearScrollMemory();
+    window.scrollTo(0, 0);
+
+    const existingSmoother = ScrollSmoother.get();
+    if (existingSmoother) {
+      existingSmoother.kill();
+    }
+
+    smootherRef.current = ScrollSmoother.create({
+      wrapper: '#smooth-wrapper',
+      content: '#smooth-content',
+      smooth: 1,
+      effects: true,
+      smoothTouch: 0.1,
+      normalizeScroll: true,
+      ignoreMobileResize: true,
+      ease: 'expo'
+    });
+
+    smootherRef.current.scrollTop(0);
+
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      if (smootherRef.current) {
+        smootherRef.current.scrollTop(0);
+      }
+    });
+
+    animationContext = gsap.context(() => {
+      if (!imageArtifactSectionRef.current || !leftTestimonialRef.current || !centerTestimonialRef.current || !rightTestimonialRef.current) {
+        return;
+      }
+
+      gsap.set(centerTestimonialRef.current, {
+        y: 140,
+        scale: 0.84,
+        autoAlpha: 0
+      });
+
+      gsap.set(leftTestimonialRef.current, {
+        x: -150,
+        y: 120,
+        autoAlpha: 0
+      });
+
+      gsap.set(rightTestimonialRef.current, {
+        x: 150,
+        y: 120,
+        autoAlpha: 0
+      });
+
+      const testimonialsRiseTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: imageArtifactSectionRef.current,
+          start: 'top 10%',
+          end: '+=720',
+          scrub: 1.5,
+          invalidateOnRefresh: true
+        }
+      });
+
+      testimonialsRiseTimeline
+        .to(centerTestimonialRef.current, {
+          y: 0,
+          scale: 1,
+          autoAlpha: 1,
+          ease: 'power3.out',
+          duration: 1.15
+        })
+        .to(leftTestimonialRef.current, {
+          x: 0,
+          y: 0,
+          autoAlpha: 1,
+          ease: 'power3.out',
+          duration: 1
+        }, '>-0.1')
+        .to(rightTestimonialRef.current, {
+          x: 0,
+          y: 0,
+          autoAlpha: 1,
+          ease: 'power3.out',
+          duration: 1
+        }, '<');
+    });
+
+    ScrollTrigger.refresh();
+
+    return () => {
+      if (animationContext) {
+        animationContext.revert();
+      }
+      if (smootherRef.current) {
+        smootherRef.current.kill();
+        smootherRef.current = null;
+      }
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = previousScrollRestoration;
+      }
+    };
+  }, []);
 
   const trustedBy = [
     "Media Companies",
@@ -94,7 +195,8 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative">
+    <div id="smooth-wrapper" className="overflow-x-hidden">
+      <div id="smooth-content" className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative">
       {/* Navigation Bar */}
       <nav className="absolute top-0 w-full flex items-center justify-between px-6 lg:px-12 h-24 bg-transparent z-50">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
@@ -121,8 +223,8 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative w-full min-h-screen overflow-hidden flex items-center bg-[#050B14] cursor-crosshair">
-        
-        <FUIOverlay />
+        <div data-speed="0.7" data-lag="0.15" className="absolute -left-24 top-24 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none" />
+        <div data-speed="1.25" data-lag="0.35" className="absolute -right-24 bottom-16 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
 
         {/* Vanta DOTS Background */}
         <VantaDotsBackground />
@@ -139,23 +241,27 @@ export default function LandingPage() {
           >
 
 
-            <Motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] mb-6 drop-shadow-2xl"
-            >
-              Detect <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-500">Deepfakes</span><br/>With Absolute Precision
-            </Motion.h1>
+            <div data-speed="clamp(0.92)">
+              <Motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] mb-6 drop-shadow-2xl"
+              >
+                Detect <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-500">Deepfakes</span><br/>With Absolute Precision
+              </Motion.h1>
+            </div>
             
-            <Motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed"
-            >
-              Protect your organization from synthetic media and AI-generated fraud using continuous 3D spatial analysis and advanced neural networking.
-            </Motion.p>
+            <div data-lag="0.25">
+              <Motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed"
+              >
+                Protect your organization from synthetic media and AI-generated fraud using continuous 3D spatial analysis and advanced neural networking.
+              </Motion.p>
+            </div>
 
             <Motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -190,7 +296,7 @@ export default function LandingPage() {
       </section>
 
       {/* Trusted By Banner */}
-      <section className="py-8 bg-indigo-50/60 border-y border-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-[14px] font-bold">
+      <section data-speed="clamp(0.96)" className="py-8 bg-indigo-50/60 border-y border-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-[14px] font-bold">
         <span className="text-indigo-400/80 uppercase tracking-wider text-xs">Trusted By</span>
         {trustedBy.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
@@ -239,7 +345,7 @@ export default function LandingPage() {
           <Motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: false, margin: "-100px" }}
             transition={{ duration: 0.6 }}
             className="text-center mb-24"
           >
@@ -249,11 +355,11 @@ export default function LandingPage() {
 
           <div className="flex flex-col gap-32">
             {/* Feature 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div ref={imageArtifactSectionRef} className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               <Motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
               >
                 <div className="flex items-center gap-4 mb-6">
@@ -274,13 +380,15 @@ export default function LandingPage() {
               <Motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
                 className="order-first lg:order-last relative group"
               >
                 <div className="absolute -inset-4 bg-linear-to-tr from-pink-500/30 to-purple-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-                <img src={videoImg} alt="Video analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
-                <div className="absolute inset-0 bg-linear-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                <div className="relative rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden aspect-4/3">
+                  <img data-speed="auto" src={videoImg} alt="Video analysis" className="h-full w-full object-cover scale-[1.18]" />
+                  <div className="absolute inset-0 bg-linear-to-tr from-pink-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                </div>
               </Motion.div>
             </div>
 
@@ -289,18 +397,20 @@ export default function LandingPage() {
               <Motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
                 className="relative group "
               >
                 <div className="absolute -inset-4 bg-linear-to-tr from-amber-500/30 to-orange-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-                <img src={audioImg} alt="Audio analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
-                <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                <div className="relative rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden aspect-4/3">
+                  <img data-speed="auto" src={audioImg} alt="Audio analysis" className="h-full w-full object-cover scale-[1.18]" />
+                  <div className="absolute inset-0 bg-linear-to-tr from-amber-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                </div>
               </Motion.div>
               <Motion.div 
                 initial={{ opacity: 0, x: 40 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
               >
                 <div className="flex items-center gap-4 mb-6">
@@ -325,7 +435,7 @@ export default function LandingPage() {
               <Motion.div 
                 initial={{ opacity: 0, x: -40 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
               >
                 <div className="flex items-center gap-4 mb-6">
@@ -346,13 +456,15 @@ export default function LandingPage() {
               <Motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 transition={{ duration: 0.7 }}
                 className="order-first lg:order-last relative group"
               >
                 <div className="absolute -inset-4 bg-linear-to-tr from-indigo-500/30 to-blue-500/30 blur-2xl rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-                <img src={imageImg} alt="Image analysis" className="relative rounded-3xl shadow-2xl border border-slate-700/50 object-cover" />
-                <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                <div className="relative rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden aspect-4/3">
+                  <img data-speed="auto" src={imageImg} alt="Image analysis" className="h-full w-full object-cover scale-[1.18]" />
+                  <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-transparent rounded-3xl mix-blend-overlay pointer-events-none"></div>
+                </div>
               </Motion.div>
             </div>
           </div>
@@ -364,7 +476,7 @@ export default function LandingPage() {
         <Motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1F2937] mb-6 tracking-tight">Trusted by Industry Leaders</h2>
@@ -373,11 +485,7 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Card 1 */}
-          <Motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+          <div ref={leftTestimonialRef}
             className="group relative bg-white border border-slate-200/60 rounded-3xl p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col items-center text-center hover:-translate-y-2 z-10 overflow-hidden"
           >
             <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -393,14 +501,10 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-400">MediaCorp</p>
               </div>
             </div>
-          </Motion.div>
+          </div>
 
           {/* Card 2 */}
-          <Motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <div ref={centerTestimonialRef}
             className="group relative bg-white border border-blue-100 rounded-3xl p-10 shadow-[0_8px_30px_rgba(59,130,246,0.08)] hover:shadow-[0_20px_40px_rgba(59,130,246,0.15)] transition-all duration-500 flex flex-col items-center text-center transform md:-translate-y-6 hover:-translate-y-8 z-20 overflow-hidden ring-1 ring-blue-50"
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-cyan-400 to-blue-500"></div>
@@ -417,14 +521,10 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-400">Global News</p>
               </div>
             </div>
-          </Motion.div>
+          </div>
 
           {/* Card 3 */}
-          <Motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+          <div ref={rightTestimonialRef}
             className="group relative bg-white border border-slate-200/60 rounded-3xl p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col items-center text-center hover:-translate-y-2 z-10 overflow-hidden"
           >
             <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -440,7 +540,7 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-400">FinTech Global</p>
               </div>
             </div>
-          </Motion.div>
+          </div>
         </div>
       </section>
 
@@ -449,7 +549,7 @@ export default function LandingPage() {
         <Motion.div 
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="bg-[#0B152A] rounded-[3rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-800"
         >
@@ -472,7 +572,7 @@ export default function LandingPage() {
                 onClick={() => navigate('/detect')} 
                 className="w-full sm:w-auto px-10 py-5 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] hover:-translate-y-1 flex items-center justify-center gap-2 border border-blue-400/30"
               >
-                Start Free Analysis <Sparkles className="w-5 h-5 text-white/90" />
+                Start Free Analysis 
               </button>
               <button 
                 className="w-full sm:w-auto px-10 py-5 border border-slate-600 text-white font-bold rounded-full hover:bg-white/5 transition-all duration-300 hover:-translate-y-1"
@@ -552,6 +652,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
